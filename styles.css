@@ -19,8 +19,8 @@ body {
 }
 
 .container {
-  max-width: 900px;
-  margin: 2rem auto;
+  max-width: 1000px;
+  margin: 1.2rem auto;
   padding: 0 1rem;
 }
 
@@ -33,7 +33,7 @@ h1, h2 {
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 form {
@@ -47,6 +47,13 @@ input, select, button {
   font-size: 1rem;
   border-radius: 6px;
   border: 1px solid var(--border);
+}
+
+select {
+  background: white;
+  width: 150px;
+  font-weight: 500;
+  font-size: large;
 }
 
 input:focus,
@@ -80,11 +87,11 @@ th, td {
 }
 
 th {
-  background: #f1f1f1;
+  background: #1e3a8a;
 }
 
 .top-user {
-  background-color: #ffe8cc;
+  background-color: #894d02;
   font-weight: bold;
 }
 

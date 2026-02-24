@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta description="A leaderboard for Codewars users, showing their ranks and scores based on their performance on the platform.">
+  <meta
+    description="A leaderboard for Codewars users, showing their ranks and scores based on their performance on the platform.">
   <title>Codewars leaderboard</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -26,29 +27,30 @@
           Enter usernames (comma separated)
         </label>
 
-        <input id="usernames" name="usernames" type="text" placeholder="CodeYourFuture, 40thieves, Abubakar-Meigag" required />
+        <input id="usernames" name="usernames" type="text" placeholder="CodeYourFuture, 40thieves, Abubakar-Meigag"
+          required />
 
         <button type="submit">
           Submit
         </button>
       </form>
+      <section aria-labelledby="ranking-heading" class="card">
+        <h2 id="ranking-heading">Select Ranking</h2>
+
+        <label for="ranking-select" class="visually-hidden">
+          Choose ranking type
+        </label>
+
+        <select id="ranking-select">
+
+        </select>
+      </section>
     </section>
 
-    <section aria-labelledby="ranking-heading" class="card hidden">
-      <h2 id="ranking-heading">Select Ranking</h2>
-
-      <label for="ranking-select" class="visually-hidden">
-        Choose ranking type
-      </label>
-
-      <select id="ranking-select">
-        <option value="overall">Overall</option>
-      </select>
-    </section>
 
     <section id="message" role="alert" aria-live="polite"></section>
 
-    <section aria-labelledby="table-heading" class="card hidden">
+    <section aria-labelledby="table-heading" class="card">
       <h2 id="table-heading">Leaderboard</h2>
 
       <table>
