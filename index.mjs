@@ -25,35 +25,37 @@ export function getUsername(event) {
 }
 
 
-const form = document.getElementById("search-form")
-form.addEventListener("submit", async function (event) {
-  const usernames = getUsername(event);
-  if (!usernames) return;
+if (typeof document !== "undefined") {
+  const form = document.getElementById("search-form");
+  form.addEventListener("submit", async function (event) {
+    const usernames = getUsername(event);
+    if (!usernames) return;
 
-  try {
-    const { successfulResults, failedUsernames } = await fetchData(usernames);
+    try {
+      const { successfulResults, failedUsernames } = await fetchData(usernames);
 
-    if (successfulResults.length === 0) {
-      storedUsers = [];
-      document.getElementById("leaderboard-body").innerHTML = "";
-      alert("All usernames are invalid. Please enter valid usernames.");
-      return;
+      if (successfulResults.length === 0) {
+        storedUsers = [];
+        document.getElementById("leaderboard-body").innerHTML = "";
+        alert("All usernames are invalid. Please enter valid usernames.");
+        return;
+      }
+
+      if (failedUsernames.length > 0) {
+        alert("The following usernames are invalid: " + failedUsernames.join(", "));
+      }
+
+      if (successfulResults.length > 0) {
+        storedUsers = successfulResults;
+        createSelectAndSetLanguage(storedUsers);
+        event.target.reset();
+      }
+
+    } catch (error) {
+      alert("Something went wrong: " + error.message);
     }
-
-    if (failedUsernames.length > 0) {
-      alert("The following usernames are invalid: " + failedUsernames.join(", "));
-    }
-
-    if (successfulResults.length > 0) {
-      storedUsers = successfulResults;
-      createSelectAndSetLanguage(storedUsers);
-      event.target.reset();
-    }
-
-  } catch (error) {
-    alert("Something went wrong: " + error.message);
-  }
-});
+  })
+}
 
 
 export async function fetchData(usernames) {
@@ -120,7 +122,7 @@ export function displayTable(users, selectedLanguage) {
     filteredUser = users.map(user => ({
       username: user.username,
       clan: user.clan,
-      score: user.ranks.overall.score
+      score: user.score
     }))
 
   } else {

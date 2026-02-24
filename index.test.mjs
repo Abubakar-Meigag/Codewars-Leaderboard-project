@@ -1,33 +1,243 @@
-// This is a placeholder file which shows how you use the nock library to
-// "mock" fetch requests, replacing real requests with fake ones that you
-// control in the test. This means you can "force" the fetch request to return
-// data in the format that you want.
-// IMPORTANT: You _must_ run npm install within the Project-Codewars-Leaderboard
-// folder for this to work.
-// You can change or delete the contents of the file once you have understood
-// how it works.
-
 import test from "node:test";
 import assert from "node:assert";
 import nock from "nock";
-import { makeFetchRequest } from "./index.mjs";
 
-test("mocks a fetch function", async () => {
-  // Create a fetch request "mock" using the nock library, which "replaces"
-  // real requests with fake ones that we can control in the test using nock
-  // functions.
-  // In this example, we set up nock so that it looks for GET requests to
-  // https://example.com/test (no other URLs will work) and responds with a 200
-  // HTTP status code, and the body {"user": "someone"}.
-  const scope = nock("https://example.com").get("/test").reply(200, JSON.stringify({ user: "someone" }));
+import {
+  getUsername,
+  fetchData,
+  createSelectAndSetLanguage,
+  displayTable
+} from "./index.mjs";
 
-  // Check that the response we got back included the fake body we set up.
-  const response = await makeFetchRequest();
-  const parsedResponse = await response.json();
-  assert(parsedResponse.user === "someone");
+import { getData } from "./getData.mjs";
 
-  // Ensure that a fetch request has been replaced by the nock library. This
-  // helps ensure that you're not making real fetch requests that don't match
-  // the nock configuration.
-  assert(scope.isDone() === true, "No matching fetch request has been made");
+
+// Helper function to set up a mock DOM environment for testing
+function setupDOM() {
+  global.alert = () => { };
+
+  global.document = {
+    elements: {},
+
+    getElementById(id) {
+      return this.elements[id];
+    },
+
+    createElement(tag) {
+      return {
+        tagName: tag,
+        children: [],
+        textContent: "",
+        value: "",
+        classList: {
+          add() { }
+        },
+        appendChild(child) {
+          this.children.push(child);
+        }
+      };
+    }
+  };
+
+
+  document.elements["usernames"] = { value: "" };
+
+  document.elements["leaderboard-body"] = {
+    innerHTML: "",
+    children: [],
+    appendChild(child) {
+      this.children.push(child);
+    }
+  };
+
+  document.elements["ranking-select"] = {
+    innerHTML: "",
+    children: [],
+    appendChild(child) {
+      this.children.push(child);
+    }
+  };
+}
+
+
+// test cases for getUsername, fetchData, createSelectAndSetLanguage, and displayTable functions
+
+test("getUsername returns cleaned usernames", () => {
+  setupDOM();
+
+  document.elements["usernames"].value = " user1 , user2 ";
+
+  const event = { preventDefault() { } };
+
+  const result = getUsername(event);
+
+  assert.deepStrictEqual(result, ["user1", "user2"]);
 });
+
+test("getUsername returns undefined for empty input", () => {
+  setupDOM();
+
+  document.elements["usernames"].value = "   ";
+
+  const event = { preventDefault() { } };
+
+  const result = getUsername(event);
+
+  assert.strictEqual(result, undefined);
+});
+
+test("getUsername ignores empty usernames between commas", () => {
+  setupDOM();
+
+  document.elements["usernames"].value = "user1,  , user2";
+
+  const event = { preventDefault() { } };
+
+  const result = getUsername(event);
+
+  assert.deepStrictEqual(result, ["user1", "user2"]);
+});
+
+test("fetchData separates valid and invalid users", async () => {
+  const usernames = ["validUser", "invalidUser"];
+
+  nock("https://www.codewars.com")
+    .get("/api/v1/users/validUser")
+    .reply(200, {
+      username: "validUser",
+      ranks: { overall: { score: 10 }, languages: {} }
+    });
+
+  nock("https://www.codewars.com")
+    .get("/api/v1/users/invalidUser")
+    .reply(404);
+
+  const result = await fetchData(usernames);
+
+  assert.strictEqual(result.successfulResults.length, 1);
+  assert.strictEqual(result.failedUsernames.length, 1);
+});
+
+test("fetchData handles all valid users", async () => {
+  const usernames = ["user1"];
+
+  nock("https://www.codewars.com")
+    .get("/api/v1/users/user1")
+    .reply(200, {
+      username: "user1",
+      ranks: { overall: { score: 5 }, languages: {} }
+    });
+
+  const result = await fetchData(usernames);
+
+  assert.strictEqual(result.successfulResults.length, 1);
+  assert.strictEqual(result.failedUsernames.length, 0);
+});
+
+
+test("getData returns parsed user data", async () => {
+  nock("https://www.codewars.com")
+    .get("/api/v1/users/testUser")
+    .reply(200, { username: "testUser" });
+
+  const result = await getData("testUser");
+
+  assert.strictEqual(result.username, "testUser");
+});
+
+test("getData throws on bad response", async () => {
+  nock("https://www.codewars.com")
+    .get("/api/v1/users/badUser")
+    .reply(404);
+
+  await assert.rejects(() => getData("badUser"));
+});
+
+
+test("createSelectAndSetLanguage adds overall option", () => {
+  setupDOM();
+
+  const users = [
+    { ranks: { languages: {} } }
+  ];
+
+  createSelectAndSetLanguage(users);
+
+  assert.strictEqual(
+    document.elements["ranking-select"].children[0].value,
+    "overall"
+  );
+});
+
+test("createSelectAndSetLanguage adds language options", () => {
+  setupDOM();
+
+  const users = [
+    {
+      ranks: {
+        languages: {
+          javascript: {},
+          python: {}
+        }
+      }
+    }
+  ];
+
+  createSelectAndSetLanguage(users);
+
+  assert.strictEqual(
+    document.elements["ranking-select"].children.length,
+    3
+  );
+});
+
+
+test("displayTable renders overall sorted rows", () => {
+  setupDOM();
+
+  const users = [
+    {
+      username: "A",
+      clan: "",
+      ranks: { overall: { score: 10 }, languages: {} }
+    },
+    {
+      username: "B",
+      clan: "",
+      ranks: { overall: { score: 20 }, languages: {} }
+    }
+  ];
+
+  displayTable(users, "overall");
+
+  assert.strictEqual(
+    document.elements["leaderboard-body"].children.length,
+    2
+  );
+});
+
+test("displayTable filters users without language", () => {
+  setupDOM();
+
+  const users = [
+    {
+      username: "A",
+      clan: "",
+      ranks: { overall: { score: 0 }, languages: { js: { score: 10 } } }
+    },
+    {
+      username: "B",
+      clan: "",
+      ranks: { overall: { score: 0 }, languages: {} }
+    }
+  ];
+
+  displayTable(users, "js");
+
+  assert.strictEqual(
+    document.elements["leaderboard-body"].children.length,
+    1
+  );
+});
+
+
