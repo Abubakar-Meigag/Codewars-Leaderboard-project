@@ -122,7 +122,7 @@ export function displayTable(users, selectedLanguage) {
     filteredUser = users.map(user => ({
       username: user.username,
       clan: user.clan,
-      score: user.score
+      score: user.ranks.overall.score
     }))
 
   } else {

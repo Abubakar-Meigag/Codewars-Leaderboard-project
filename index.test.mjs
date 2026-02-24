@@ -66,9 +66,7 @@ test("getUsername returns cleaned usernames", () => {
   setupDOM();
 
   document.elements["usernames"].value = " user1 , user2 ";
-
   const event = { preventDefault() { } };
-
   const result = getUsername(event);
 
   assert.deepStrictEqual(result, ["user1", "user2"]);
@@ -78,9 +76,7 @@ test("getUsername returns undefined for empty input", () => {
   setupDOM();
 
   document.elements["usernames"].value = "   ";
-
   const event = { preventDefault() { } };
-
   const result = getUsername(event);
 
   assert.strictEqual(result, undefined);
@@ -90,9 +86,7 @@ test("getUsername ignores empty usernames between commas", () => {
   setupDOM();
 
   document.elements["usernames"].value = "user1,  , user2";
-
   const event = { preventDefault() { } };
-
   const result = getUsername(event);
 
   assert.deepStrictEqual(result, ["user1", "user2"]);
@@ -158,7 +152,14 @@ test("createSelectAndSetLanguage adds overall option", () => {
   setupDOM();
 
   const users = [
-    { ranks: { languages: {} } }
+    {
+      username: "Test",
+      clan: "",
+      ranks: {
+        overall: { score: 0 },
+        languages: {}
+      }
+    }
   ];
 
   createSelectAndSetLanguage(users);
@@ -174,10 +175,13 @@ test("createSelectAndSetLanguage adds language options", () => {
 
   const users = [
     {
+      username: "Test",
+      clan: "",
       ranks: {
+        overall: { score: 0 },
         languages: {
-          javascript: {},
-          python: {}
+          javascript: { score: 10 },
+          python: { score: 5 }
         }
       }
     }
